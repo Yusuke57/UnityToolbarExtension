@@ -18,7 +18,7 @@ namespace Yusuke57.UnityToolbarExtension.Editor.Sample
             var container = new VisualElement();
             container.style.flexDirection = FlexDirection.Row;
             container.style.alignItems = Align.Center;
-            container.style.marginLeft = 40;
+            container.style.marginLeft = 10;
             container.style.marginRight = 10;
             container.style.alignSelf = Align.Center;
             container.style.height = 18;
@@ -86,8 +86,9 @@ namespace Yusuke57.UnityToolbarExtension.Editor.Sample
                     return 1f;
                 }
                 
-                sliderValue = (sliderValue - DefaultTimeScaleRange) / (1f - DefaultTimeScaleRange);
-                return 1f + sliderValue * (MaxTimeScale - 1f); // 中央より右側では1からMaxTimeScaleまでの範囲
+                var value = (sliderValue - DefaultTimeScaleRange) / (1f - DefaultTimeScaleRange);
+                value = Mathf.Pow(value, 2); // 二次関数で増やす
+                return 1f + value * (MaxTimeScale - 1f); // 中央より右側では1からMaxTimeScaleまでの範囲
             }
             else
             {
@@ -96,8 +97,8 @@ namespace Yusuke57.UnityToolbarExtension.Editor.Sample
                     return 1f;
                 }
                 
-                sliderValue = (sliderValue + DefaultTimeScaleRange) / (1f - DefaultTimeScaleRange);
-                return 1f + sliderValue; // 中央より左側では0から1までの範囲
+                var value = (sliderValue + DefaultTimeScaleRange) / (1f - DefaultTimeScaleRange);
+                return 1f + value; // 中央より左側では0から1までの範囲
             }
         }
     }
