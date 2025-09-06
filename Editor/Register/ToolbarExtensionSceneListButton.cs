@@ -8,7 +8,7 @@ using UnityEngine.UIElements;
 
 namespace YujiAp.UnityToolbarExtension.Editor.Register
 {
-    public class ToolbarExtensionSceneListButton : IToolbarElementRegister
+    public class ToolbarExtensionSceneListButton : IToolbarElement
     {
         public ToolbarElementLayoutType DefaultLayoutType => ToolbarElementLayoutType.RightSideRightAlign;
 

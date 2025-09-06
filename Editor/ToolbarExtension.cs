@@ -125,10 +125,10 @@ namespace YujiAp.UnityToolbarExtension.Editor
             rightSideRightAlignRoot.Clear();
 
             var settings = GetSettings();
-            var elementRegisters = GetTypesImplementingInterface<IToolbarElementRegister>();
+            var toolbarElements = GetTypesImplementingInterface<IToolbarElement>();
 
             // 設定がある場合は設定に従って利用可能な型を更新
-            settings?.UpdateElementSettings(elementRegisters.ToList());
+            settings?.UpdateElementSettings(toolbarElements.ToList());
 
             // LayoutType別に要素を配置
             var layoutTypes = (ToolbarElementLayoutType[]) Enum.GetValues(typeof(ToolbarElementLayoutType));
@@ -150,14 +150,20 @@ namespace YujiAp.UnityToolbarExtension.Editor
                 foreach (var elementSetting in orderedSettings)
                 {
                     // 設定で無効化されている場合はスキップ
-                    if (!elementSetting.IsEnabled) continue;
-
-                    var registerType = elementRegisters.FirstOrDefault(t => t.FullName == elementSetting.TypeName);
-                    if (registerType == null) continue;
-
-                    if (Activator.CreateInstance(registerType) is IToolbarElementRegister register)
+                    if (!elementSetting.IsEnabled)
                     {
-                        var element = register.CreateElement();
+                        continue;
+                    }
+
+                    var elementType = toolbarElements.FirstOrDefault(t => t.FullName == elementSetting.TypeName);
+                    if (elementType == null)
+                    {
+                        continue;
+                    }
+
+                    if (Activator.CreateInstance(elementType) is IToolbarElement toolbarElement)
+                    {
+                        var element = toolbarElement.CreateElement();
                         if (element != null)
                         {
                             root.Add(element);

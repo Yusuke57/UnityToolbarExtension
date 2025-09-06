@@ -171,7 +171,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
 
         private static List<Type> GetAvailableToolbarElementTypes()
         {
-            return GetTypesImplementingInterface<IToolbarElementRegister>();
+            return GetTypesImplementingInterface<IToolbarElement>();
         }
 
         private static List<Type> GetTypesImplementingInterface<TInterface>()

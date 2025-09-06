@@ -2,7 +2,7 @@ using UnityEngine.UIElements;
 
 namespace YujiAp.UnityToolbarExtension.Editor
 {
-    public interface IToolbarElementRegister
+    public interface IToolbarElement
     {
         ToolbarElementLayoutType DefaultLayoutType { get; }
         VisualElement CreateElement();

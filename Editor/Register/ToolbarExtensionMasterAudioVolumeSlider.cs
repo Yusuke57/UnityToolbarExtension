@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 
 namespace YujiAp.UnityToolbarExtension.Editor.Register
 {
-    public class ToolbarExtensionMasterAudioVolumeSlider : IToolbarElementRegister
+    public class ToolbarExtensionMasterAudioVolumeSlider : IToolbarElement
     {
         private string MasterAudioVolumeValueText => $"{AudioListener.volume * 100:0}";
         public ToolbarElementLayoutType DefaultLayoutType => ToolbarElementLayoutType.LeftSideLeftAlign;

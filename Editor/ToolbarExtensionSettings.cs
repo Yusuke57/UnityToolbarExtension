@@ -137,9 +137,9 @@ namespace YujiAp.UnityToolbarExtension.Editor
 
         private static ToolbarElementLayoutType GetLayoutType(Type type)
         {
-            if (Activator.CreateInstance(type) is IToolbarElementRegister register)
+            if (Activator.CreateInstance(type) is IToolbarElement toolbarElement)
             {
-                return register.DefaultLayoutType;
+                return toolbarElement.DefaultLayoutType;
             }
 
             return ToolbarElementLayoutType.LeftSideLeftAlign;

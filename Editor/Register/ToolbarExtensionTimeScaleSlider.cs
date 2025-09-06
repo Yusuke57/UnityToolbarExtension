@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 
 namespace YujiAp.UnityToolbarExtension.Editor.Register
 {
-    public class ToolbarExtensionTimeScaleSlider : IToolbarElementRegister
+    public class ToolbarExtensionTimeScaleSlider : IToolbarElement
     {
         private string TimeScaleValueText => $"×{Time.timeScale:F1}";
         public ToolbarElementLayoutType DefaultLayoutType => ToolbarElementLayoutType.RightSideLeftAlign;

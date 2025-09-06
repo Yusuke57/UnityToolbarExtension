@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 
 namespace YujiAp.UnityToolbarExtension.Editor.Register
 {
-    public class ToolbarExtensionPrefabHistoryButton : IToolbarElementRegister
+    public class ToolbarExtensionPrefabHistoryButton : IToolbarElement
     {
         private static readonly HistoryHandler _historyHandler = new("Prefab");
 
