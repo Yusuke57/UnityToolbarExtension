@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace Yusuke57.UnityToolbarExtension.Editor.Sample
+namespace YujiAp.UnityToolbarExtension.Editor.Sample
 {
     public class HistoryHandler
     {

@@ -1,6 +1,6 @@
 using UnityEngine.UIElements;
 
-namespace Yusuke57.UnityToolbarExtension.Editor
+namespace YujiAp.UnityToolbarExtension.Editor
 {
     public interface IToolbarElementRegister
     {

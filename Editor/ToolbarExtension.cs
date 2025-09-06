@@ -5,7 +5,7 @@ using System.Reflection;
 using UnityEditor;
 using UnityEngine.UIElements;
 
-namespace Yusuke57.UnityToolbarExtension.Editor
+namespace YujiAp.UnityToolbarExtension.Editor
 {
     [InitializeOnLoad]
     public static class ToolbarExtension

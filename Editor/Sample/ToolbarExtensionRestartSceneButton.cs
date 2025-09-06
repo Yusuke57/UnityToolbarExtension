@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
-namespace Yusuke57.UnityToolbarExtension.Editor.Sample
+namespace YujiAp.UnityToolbarExtension.Editor.Sample
 {
     public class ToolbarExtensionRestartSceneButton : IToolbarElementRegister
     {

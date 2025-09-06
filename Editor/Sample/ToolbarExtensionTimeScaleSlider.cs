@@ -3,7 +3,7 @@ using UnityEditor.Toolbars;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Yusuke57.UnityToolbarExtension.Editor.Sample
+namespace YujiAp.UnityToolbarExtension.Editor.Sample
 {
     public class ToolbarExtensionTimeScaleSlider : IToolbarElementRegister
     {
