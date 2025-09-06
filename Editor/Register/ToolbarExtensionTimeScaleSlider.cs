@@ -63,7 +63,7 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
             resetButton.style.paddingRight = 0;
             resetButton.style.minWidth = 18;
 
-            slider.RegisterValueChangedCallback(evt => 
+            slider.RegisterValueChangedCallback(evt =>
             {
                 Time.timeScale = ConvertSliderValueToTimeScale(evt.newValue);
                 valueLabel.text = TimeScaleValueText;
@@ -76,7 +76,7 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
 
             return container;
         }
-        
+
         private static float ConvertSliderValueToTimeScale(float sliderValue)
         {
             if (sliderValue > 0)
@@ -85,7 +85,7 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
                 {
                     return 1f;
                 }
-                
+
                 var value = (sliderValue - DefaultTimeScaleRange) / (1f - DefaultTimeScaleRange);
                 value = Mathf.Pow(value, 2); // 二次関数で増やす
                 return 1f + value * (MaxTimeScale - 1f); // 中央より右側では1からMaxTimeScaleまでの範囲
@@ -96,7 +96,7 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
                 {
                     return 1f;
                 }
-                
+
                 var value = (sliderValue + DefaultTimeScaleRange) / (1f - DefaultTimeScaleRange);
                 return 1f + value; // 中央より左側では0から1までの範囲
             }

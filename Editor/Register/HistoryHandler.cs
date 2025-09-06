@@ -38,12 +38,12 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
             {
                 _history.Remove(value);
             }
-            
+
             if (_history.Count >= MaxHistoryCount)
             {
                 _history.RemoveAt(_history.Count - 1);
             }
-            
+
             _history.Insert(0, value);
             Save();
         }

@@ -145,7 +145,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
                     // 直接settingオブジェクトを変更して即座に反映
                     setting.SetLayoutType(newLayoutType);
                     _settings.SetSettingsDirty(); // Dirty フラグを設定
-                    
+
                     // LayoutType変更時はReorderableListを再構築する必要がある
                     _reorderableLists.Clear();
                     EditorApplication.delayCall += ToolbarExtension.ForceRefresh;

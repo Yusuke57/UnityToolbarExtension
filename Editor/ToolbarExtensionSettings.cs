@@ -94,14 +94,14 @@ namespace YujiAp.UnityToolbarExtension.Editor
                 _isDirty = true;
             }
         }
-        
+
         /// <summary>
         /// 既存の設定を全てDefaultLayoutTypeにリセット（開発・テスト用）
         /// </summary>
         public void ResetAllLayoutTypesToDefault(List<Type> availableTypes)
         {
             var hasChanges = false;
-            
+
             foreach (var setting in _settingsData.ElementSettings)
             {
                 var type = availableTypes.FirstOrDefault(t => t.FullName == setting.TypeName);
@@ -115,7 +115,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
                     }
                 }
             }
-            
+
             if (hasChanges)
             {
                 _isDirty = true;
@@ -153,6 +153,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
             {
                 filteredSettings.Add(setting); // 同じオブジェクト参照を追加
             }
+
             return filteredSettings;
         }
 
@@ -184,14 +185,14 @@ namespace YujiAp.UnityToolbarExtension.Editor
             try
             {
                 var json = JsonUtility.ToJson(_settingsData, true);
-                
+
                 // ProjectSettingsディレクトリが存在しない場合は作成
                 var directory = Path.GetDirectoryName(SettingsFilePath);
                 if (directory != null && !Directory.Exists(directory))
                 {
                     Directory.CreateDirectory(directory);
                 }
-                
+
                 File.WriteAllText(SettingsFilePath, json);
             }
             catch (Exception e)
@@ -201,7 +202,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
 
             _isDirty = false;
         }
-        
+
         public void SetSettingsDirty()
         {
             _isDirty = true;

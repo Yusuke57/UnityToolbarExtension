@@ -49,7 +49,7 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
             resetButton.style.paddingRight = 0;
             resetButton.style.minWidth = 18;
 
-            slider.RegisterValueChangedCallback(evt => 
+            slider.RegisterValueChangedCallback(evt =>
             {
                 AudioListener.volume = evt.newValue;
                 valueLabel.text = MasterAudioVolumeValueText;
