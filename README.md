@@ -6,7 +6,7 @@
 - ProjectSettingsから有効無効の切り替えや表示場所の変更が可能
 
 ## デフォルト機能
-<img width="900" src="https://github.com/user-attachments/assets/7461eeb4-208e-45da-b08d-6811de1140a0" />
+<img width="900" src="https://github.com/user-attachments/assets/a8ff3676-09ac-47db-b8fd-415d38e68633" />
 
 - **プレイ中の音量変更:** AudioListener.valueを変更する。アイコンクリックで最大音量に戻す
 - **Sceneのリロード:** プレイ中、現在のシーンを再読み込みする
@@ -16,7 +16,7 @@
 上部にビルド設定に含まれるScene、その下にそれ以外のSceneが表示される
 
 ## 設定
-<img width="635" height="476" alt="image" src="https://github.com/user-attachments/assets/e82017bc-7aba-4fee-a565-2afaf44f5fa6" />
+<img width="635" src="https://github.com/user-attachments/assets/e82017bc-7aba-4fee-a565-2afaf44f5fa6" />
 
 ProjectSettings の Toolbar Extension で、各機能の有効無効や表示位置、並び順を変更できる
 
@@ -50,7 +50,7 @@ namespace Sample.Editor
 }
 ```
 
-<img width="320" alt="image" src="https://github.com/user-attachments/assets/95025e2d-1b54-44eb-8b8d-3f225d8454bd" />
+<img width="320" src="https://github.com/user-attachments/assets/95025e2d-1b54-44eb-8b8d-3f225d8454bd" />
 
 ## 導入方法
 1. PackageManager左上の「+」ボタンから「Install package from git URL...」を選択
