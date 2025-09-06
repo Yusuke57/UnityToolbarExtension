@@ -11,8 +11,9 @@ namespace YujiAp.UnityToolbarExtension.Editor
         private const string PrefsKeyPrefix = "ToolbarExtension_";
         private const string ElementCountKey = PrefsKeyPrefix + "ElementCount";
         
-        private List<ToolbarElementSetting> elementSettings = new List<ToolbarElementSetting>();
+        private readonly List<ToolbarElementSetting> _elementSettings = new();
         private static ToolbarExtensionSettings _instance;
+        private bool _isDirty = false;
 
         public static ToolbarExtensionSettings Instance
         {
@@ -27,27 +28,27 @@ namespace YujiAp.UnityToolbarExtension.Editor
             }
         }
 
-        public IReadOnlyList<ToolbarElementSetting> ElementSettings => elementSettings;
+        public IReadOnlyList<ToolbarElementSetting> ElementSettings => _elementSettings;
 
         public bool IsElementEnabled(Type elementType)
         {
-            var setting = elementSettings.FirstOrDefault(s => s.TypeName == elementType.FullName);
+            var setting = _elementSettings.FirstOrDefault(s => s.TypeName == elementType.FullName);
             return setting?.IsEnabled ?? true; // デフォルトは有効
         }
 
         public void SetElementEnabled(Type elementType, bool enabled)
         {
-            var setting = elementSettings.FirstOrDefault(s => s.TypeName == elementType.FullName);
+            var setting = _elementSettings.FirstOrDefault(s => s.TypeName == elementType.FullName);
             if (setting == null)
             {
                 setting = new ToolbarElementSetting(elementType.FullName, GetDisplayName(elementType), enabled);
-                elementSettings.Add(setting);
+                _elementSettings.Add(setting);
             }
             else
             {
                 setting.SetEnabled(enabled);
             }
-            SaveSettings();
+            _isDirty = true;
         }
 
         private string GetDisplayName(Type type)
@@ -65,22 +66,29 @@ namespace YujiAp.UnityToolbarExtension.Editor
 
         public void UpdateElementSettings(List<Type> newAvailableTypes)
         {
+            var hasChanges = false;
+            
             // 新しい要素を追加
             foreach (var type in newAvailableTypes)
             {
-                if (elementSettings.All(s => s.TypeName != type.FullName))
+                if (_elementSettings.All(s => s.TypeName != type.FullName))
                 {
-                    var nextOrder = elementSettings.Count > 0 ? elementSettings.Max(s => s.Order) + 1 : 0;
+                    var nextOrder = _elementSettings.Count > 0 ? _elementSettings.Max(s => s.Order) + 1 : 0;
                     var setting = new ToolbarElementSetting(type.FullName, GetDisplayName(type), true, nextOrder);
-                    elementSettings.Add(setting);
+                    _elementSettings.Add(setting);
+                    hasChanges = true;
                 }
             }
 
             // 存在しない要素を削除
             var availableTypeNames = newAvailableTypes.Select(t => t.FullName).ToHashSet();
-            elementSettings.RemoveAll(s => !availableTypeNames.Contains(s.TypeName));
+            var removedCount = _elementSettings.RemoveAll(s => !availableTypeNames.Contains(s.TypeName));
+            if (removedCount > 0) hasChanges = true;
             
-            SaveSettings();
+            if (hasChanges)
+            {
+                _isDirty = true;
+            }
         }
 
         public void ReorderElements(ToolbarElementLayoutType layoutType, List<ToolbarElementSetting> reorderedSettings)
@@ -89,13 +97,13 @@ namespace YujiAp.UnityToolbarExtension.Editor
             for (int i = 0; i < reorderedSettings.Count; i++)
             {
                 var setting = reorderedSettings[i];
-                var originalSetting = elementSettings.FirstOrDefault(s => s.TypeName == setting.TypeName);
+                var originalSetting = _elementSettings.FirstOrDefault(s => s.TypeName == setting.TypeName);
                 if (originalSetting != null)
                 {
                     originalSetting.SetOrder(i);
                 }
             }
-            SaveSettings();
+            _isDirty = true;
         }
 
         private static List<Type> availableTypes;
@@ -116,7 +124,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
 
         public List<ToolbarElementSetting> GetSettingsForLayoutType(ToolbarElementLayoutType layoutType)
         {
-            return elementSettings
+            return _elementSettings
                 .Where(s =>
                 {
                     var type = availableTypes?.FirstOrDefault(t => t.FullName == s.TypeName);
@@ -129,7 +137,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
         private void LoadSettings()
         {
             var count = EditorPrefs.GetInt(ElementCountKey, 0);
-            elementSettings.Clear();
+            _elementSettings.Clear();
             
             for (int i = 0; i < count; i++)
             {
@@ -145,18 +153,20 @@ namespace YujiAp.UnityToolbarExtension.Editor
                     var isEnabled = EditorPrefs.GetBool(isEnabledKey, true);
                     var order = EditorPrefs.GetInt(orderKey, 0);
                     
-                    elementSettings.Add(new ToolbarElementSetting(typeName, displayName, isEnabled, order));
+                    _elementSettings.Add(new ToolbarElementSetting(typeName, displayName, isEnabled, order));
                 }
             }
         }
 
-        private void SaveSettings()
+        public void SaveSettingsIfDirty()
         {
-            EditorPrefs.SetInt(ElementCountKey, elementSettings.Count);
+            if (!_isDirty) return;
             
-            for (int i = 0; i < elementSettings.Count; i++)
+            EditorPrefs.SetInt(ElementCountKey, _elementSettings.Count);
+            
+            for (int i = 0; i < _elementSettings.Count; i++)
             {
-                var setting = elementSettings[i];
+                var setting = _elementSettings[i];
                 var typeNameKey = PrefsKeyPrefix + "TypeName_" + i;
                 var displayNameKey = PrefsKeyPrefix + "DisplayName_" + i;
                 var isEnabledKey = PrefsKeyPrefix + "IsEnabled_" + i;
@@ -167,6 +177,8 @@ namespace YujiAp.UnityToolbarExtension.Editor
                 EditorPrefs.SetBool(isEnabledKey, setting.IsEnabled);
                 EditorPrefs.SetInt(orderKey, setting.Order);
             }
+            
+            _isDirty = false;
         }
     }
 

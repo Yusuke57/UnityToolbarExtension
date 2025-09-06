@@ -14,6 +14,8 @@ namespace YujiAp.UnityToolbarExtension.Editor
         private ToolbarExtensionSettings _settings;
         private readonly Dictionary<ToolbarElementLayoutType, ReorderableList> _reorderableLists = new Dictionary<ToolbarElementLayoutType, ReorderableList>();
         private bool _needsRefresh;
+        private List<Type> _cachedAvailableTypes;
+        private bool _hasInitialized;
 
         private ToolbarExtensionSettingsProvider(string path, SettingsScope scope = SettingsScope.Project)
             : base(path, scope)
@@ -42,10 +44,14 @@ namespace YujiAp.UnityToolbarExtension.Editor
             
             EditorGUILayout.Space();
 
-            // 利用可能な要素タイプを取得して設定を更新
-            var availableTypes = GetAvailableToolbarElementTypes();
-            _settings.SetAvailableTypes(availableTypes);
-            _settings.UpdateElementSettings(availableTypes);
+            // 初期化時のみ要素タイプを取得して設定を更新
+            if (!_hasInitialized)
+            {
+                _cachedAvailableTypes = GetAvailableToolbarElementTypes();
+                _settings.SetAvailableTypes(_cachedAvailableTypes);
+                _settings.UpdateElementSettings(_cachedAvailableTypes);
+                _hasInitialized = true;
+            }
 
             EditorGUI.BeginChangeCheck();
 
@@ -60,13 +66,13 @@ namespace YujiAp.UnityToolbarExtension.Editor
                 EditorGUILayout.Space();
                 EditorGUILayout.LabelField(GetLayoutTypeName(layoutType), EditorStyles.boldLabel);
                 
-                DrawReorderableElementList(layoutType, settingsForLayout, availableTypes);
+                DrawReorderableElementList(layoutType, settingsForLayout, _cachedAvailableTypes);
             }
 
             if (EditorGUI.EndChangeCheck() || _needsRefresh)
             {
-                // 設定変更時にツールバーを即座に更新
-                ToolbarExtension.ForceRefresh();
+                // 設定を保存（ダーティフラグが立っている場合のみ）
+                _settings.SaveSettingsIfDirty();
                 _needsRefresh = false;
             }
         }
@@ -123,7 +129,11 @@ namespace YujiAp.UnityToolbarExtension.Editor
                 if (newEnabled != setting.IsEnabled && elementType != null)
                 {
                     _settings.SetElementEnabled(elementType, newEnabled);
-                    _needsRefresh = true;
+                    // 遅延でツールバー更新
+                    EditorApplication.delayCall += () =>
+                    {
+                        ToolbarExtension.ForceRefresh();
+                    };
                 }
                 
                 // 要素名
@@ -138,7 +148,12 @@ namespace YujiAp.UnityToolbarExtension.Editor
                 settings.RemoveAt(oldIndex);
                 settings.Insert(newIndex, setting);
                 _settings.ReorderElements(layoutType, settings);
-                _needsRefresh = true;
+                
+                // 遅延でツールバー更新（UI応答性を改善）
+                EditorApplication.delayCall += () =>
+                {
+                    ToolbarExtension.ForceRefresh();
+                };
             };
             
             reorderableList.elementHeight = EditorGUIUtility.singleLineHeight + 2;
