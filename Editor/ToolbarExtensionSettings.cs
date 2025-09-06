@@ -6,14 +6,21 @@ using UnityEngine;
 
 namespace YujiAp.UnityToolbarExtension.Editor
 {
+    [Serializable]
+    public class ToolbarElementSettingsData
+    {
+        [SerializeField] private List<ToolbarElementSetting> _elementSettings = new();
+        
+        public List<ToolbarElementSetting> ElementSettings => _elementSettings;
+    }
+    
     public class ToolbarExtensionSettings
     {
-        private const string PrefsKeyPrefix = "ToolbarExtension_";
-        private const string ElementCountKey = PrefsKeyPrefix + "ElementCount";
+        private const string PrefsKey = "ToolbarExtensionSettings";
         
         private readonly List<ToolbarElementSetting> _elementSettings = new();
         private static ToolbarExtensionSettings _instance;
-        private bool _isDirty = false;
+        private bool _isDirty;
 
         public static ToolbarExtensionSettings Instance
         {
@@ -26,14 +33,6 @@ namespace YujiAp.UnityToolbarExtension.Editor
                 }
                 return _instance;
             }
-        }
-
-        public IReadOnlyList<ToolbarElementSetting> ElementSettings => _elementSettings;
-
-        public bool IsElementEnabled(Type elementType)
-        {
-            var setting = _elementSettings.FirstOrDefault(s => s.TypeName == elementType.FullName);
-            return setting?.IsEnabled ?? true; // デフォルトは有効
         }
 
         public void SetElementEnabled(Type elementType, bool enabled)
@@ -51,17 +50,15 @@ namespace YujiAp.UnityToolbarExtension.Editor
             _isDirty = true;
         }
 
-        private string GetDisplayName(Type type)
+        private static string GetDisplayName(Type type)
         {
-            // クラス名からToolbarExtensionプレフィックスを除去
+            return RemoveToolbarExtensionPrefix(type.Name);
+        }
+        
+        private static string RemoveToolbarExtensionPrefix(string name)
+        {
             const string prefix = "ToolbarExtension";
-            var displayName = type.Name;
-            if (displayName.StartsWith(prefix))
-            {
-                displayName = displayName[prefix.Length..];
-            }
-
-            return displayName;
+            return name.StartsWith(prefix) ? name[prefix.Length..] : name;
         }
 
         public void UpdateElementSettings(List<Type> newAvailableTypes)
@@ -91,17 +88,14 @@ namespace YujiAp.UnityToolbarExtension.Editor
             }
         }
 
-        public void ReorderElements(ToolbarElementLayoutType layoutType, List<ToolbarElementSetting> reorderedSettings)
+        public void ReorderElements(List<ToolbarElementSetting> reorderedSettings)
         {
             // ReorderableListで並び替えられた順序で Order を更新
-            for (int i = 0; i < reorderedSettings.Count; i++)
+            for (var i = 0; i < reorderedSettings.Count; i++)
             {
                 var setting = reorderedSettings[i];
                 var originalSetting = _elementSettings.FirstOrDefault(s => s.TypeName == setting.TypeName);
-                if (originalSetting != null)
-                {
-                    originalSetting.SetOrder(i);
-                }
+                originalSetting?.SetOrder(i);
             }
             _isDirty = true;
         }
@@ -136,46 +130,41 @@ namespace YujiAp.UnityToolbarExtension.Editor
 
         private void LoadSettings()
         {
-            var count = EditorPrefs.GetInt(ElementCountKey, 0);
             _elementSettings.Clear();
             
-            for (int i = 0; i < count; i++)
+            if (EditorPrefs.HasKey(PrefsKey))
             {
-                var typeNameKey = PrefsKeyPrefix + "TypeName_" + i;
-                var displayNameKey = PrefsKeyPrefix + "DisplayName_" + i;
-                var isEnabledKey = PrefsKeyPrefix + "IsEnabled_" + i;
-                var orderKey = PrefsKeyPrefix + "Order_" + i;
-                
-                if (EditorPrefs.HasKey(typeNameKey))
+                var json = EditorPrefs.GetString(PrefsKey);
+                try
                 {
-                    var typeName = EditorPrefs.GetString(typeNameKey);
-                    var displayName = EditorPrefs.GetString(displayNameKey);
-                    var isEnabled = EditorPrefs.GetBool(isEnabledKey, true);
-                    var order = EditorPrefs.GetInt(orderKey, 0);
-                    
-                    _elementSettings.Add(new ToolbarElementSetting(typeName, displayName, isEnabled, order));
+                    var data = JsonUtility.FromJson<ToolbarElementSettingsData>(json);
+                    _elementSettings.AddRange(data.ElementSettings);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError($"Failed to load ToolbarExtension settings from JSON: {e.Message}");
                 }
             }
         }
 
         public void SaveSettingsIfDirty()
         {
-            if (!_isDirty) return;
-            
-            EditorPrefs.SetInt(ElementCountKey, _elementSettings.Count);
-            
-            for (int i = 0; i < _elementSettings.Count; i++)
+            if (!_isDirty)
             {
-                var setting = _elementSettings[i];
-                var typeNameKey = PrefsKeyPrefix + "TypeName_" + i;
-                var displayNameKey = PrefsKeyPrefix + "DisplayName_" + i;
-                var isEnabledKey = PrefsKeyPrefix + "IsEnabled_" + i;
-                var orderKey = PrefsKeyPrefix + "Order_" + i;
-                
-                EditorPrefs.SetString(typeNameKey, setting.TypeName);
-                EditorPrefs.SetString(displayNameKey, setting.DisplayName);
-                EditorPrefs.SetBool(isEnabledKey, setting.IsEnabled);
-                EditorPrefs.SetInt(orderKey, setting.Order);
+                return;
+            }
+            
+            var data = new ToolbarElementSettingsData();
+            data.ElementSettings.AddRange(_elementSettings);
+            
+            try
+            {
+                var json = JsonUtility.ToJson(data, true);
+                EditorPrefs.SetString(PrefsKey, json);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError($"Failed to save ToolbarExtension settings to JSON: {e.Message}");
             }
             
             _isDirty = false;
@@ -187,7 +176,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
     {
         [SerializeField] private string _typeName;
         [SerializeField] private string _displayName;
-        [SerializeField] private bool _isEnabled = true;
+        [SerializeField] private bool _isEnabled;
         [SerializeField] private int _order;
         
         public string TypeName => _typeName;

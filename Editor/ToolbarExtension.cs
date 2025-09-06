@@ -135,13 +135,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
             }
 
             // LayoutType別に要素を配置
-            var layoutTypes = new[]
-            {
-                ToolbarElementLayoutType.LeftSideLeftAlign,
-                ToolbarElementLayoutType.LeftSideRightAlign,
-                ToolbarElementLayoutType.RightSideLeftAlign,
-                ToolbarElementLayoutType.RightSideRightAlign
-            };
+            var layoutTypes = (ToolbarElementLayoutType[])Enum.GetValues(typeof(ToolbarElementLayoutType));
 
             foreach (var layoutType in layoutTypes)
             {
@@ -155,15 +149,8 @@ namespace YujiAp.UnityToolbarExtension.Editor
                 };
 
                 // 設定からこのLayoutTypeの要素を順序付きで取得
-                List<ToolbarElementSetting> orderedSettings;
-                if (settings != null)
-                {
-                    orderedSettings = settings.GetSettingsForLayoutType(layoutType);
-                }
-                else
-                {
-                    // 設定がない場合はデフォルト順序
-                    orderedSettings = elementRegisters
+                var orderedSettings = settings?.GetSettingsForLayoutType(layoutType) ?? 
+                    elementRegisters
                         .Where(type =>
                         {
                             if (Activator.CreateInstance(type) is IToolbarElementRegister register)
@@ -174,7 +161,6 @@ namespace YujiAp.UnityToolbarExtension.Editor
                         })
                         .Select(type => new ToolbarElementSetting(type.FullName, type.Name, true, 0))
                         .ToList();
-                }
 
                 foreach (var elementSetting in orderedSettings)
                 {
@@ -199,23 +185,26 @@ namespace YujiAp.UnityToolbarExtension.Editor
         /// <summary>
         /// 特定のインターフェースを実装したすべての型を取得
         /// </summary>
-        private static IEnumerable<Type> GetTypesImplementingInterface<TInterface>()
+        private static List<Type> GetTypesImplementingInterface<TInterface>()
         {
             var interfaceType = typeof(TInterface);
             return AppDomain.CurrentDomain.GetAssemblies()
                 .Where(a => !a.IsDynamic)
-                .SelectMany(a =>
-                {
-                    try
-                    {
-                        return a.GetTypes();
-                    }
-                    catch (ReflectionTypeLoadException e)
-                    {
-                        return e.Types.Where(t => t != null);
-                    }
-                })
-                .Where(t => t != null && interfaceType.IsAssignableFrom(t) && t.IsClass && !t.IsAbstract);
+                .SelectMany(GetAssemblyTypes)
+                .Where(t => t != null && interfaceType.IsAssignableFrom(t) && t.IsClass && !t.IsAbstract)
+                .ToList();
+        }
+        
+        private static IEnumerable<Type> GetAssemblyTypes(Assembly assembly)
+        {
+            try
+            {
+                return assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException e)
+            {
+                return e.Types.Where(t => t != null);
+            }
         }
 
         /// <summary>
@@ -232,7 +221,10 @@ namespace YujiAp.UnityToolbarExtension.Editor
         public static void ForceRefresh()
         {
             var toolbar = GetToolbar();
-            if (toolbar == null) return;
+            if (toolbar == null)
+            {
+                return;
+            }
 
             var leftContainer = toolbar.Q(ToolbarExtensionLeftContainerName);
             var rightContainer = toolbar.Q(ToolbarExtensionRightContainerName);
