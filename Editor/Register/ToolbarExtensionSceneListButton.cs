@@ -45,20 +45,14 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
             }
             else
             {
-                // ビルド設定のシーンを取得
-                var buildScenes = EditorBuildSettings.scenes
+                var buildScenePaths = EditorBuildSettings.scenes
                     .Where(scene => scene.enabled)
                     .Select(scene => scene.path)
-                    .ToArray();
-
-                // ビルドに含まれるシーンと含まれないシーンに分離
-                var buildScenePaths = allScenePaths
-                    .Where(path => buildScenes.Contains(path))
-                    .OrderBy(Path.GetFileNameWithoutExtension)
+                    .Where(path => allScenePaths.Contains(path))
                     .ToArray();
 
                 var otherScenePaths = allScenePaths
-                    .Where(path => !buildScenes.Contains(path))
+                    .Where(path => !buildScenePaths.Contains(path))
                     .OrderBy(Path.GetFileNameWithoutExtension)
                     .ToArray();
 
