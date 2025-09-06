@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using UnityEditor;
 using UnityEngine;
 
 namespace YujiAp.UnityToolbarExtension.Editor
@@ -53,20 +52,6 @@ namespace YujiAp.UnityToolbarExtension.Editor
             }
 
             _isDirty = true;
-        }
-
-        public void SetElementLayoutType(Type elementType, ToolbarElementLayoutType layoutType)
-        {
-            var setting = _settingsData.ElementSettings.FirstOrDefault(s => s.TypeName == elementType.FullName);
-            if (setting != null)
-            {
-                    setting.SetLayoutType(layoutType);
-                _isDirty = true;
-            }
-            else
-            {
-                Debug.LogError($"SetElementLayoutType: Setting not found for {elementType.FullName}");
-            }
         }
 
         private static string GetDisplayName(Type type)
@@ -136,7 +121,6 @@ namespace YujiAp.UnityToolbarExtension.Editor
                 _isDirty = true;
             }
         }
-        
 
         public void ReorderElements(List<ToolbarElementSetting> reorderedSettings)
         {
@@ -194,7 +178,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
         {
             if (!_isDirty)
             {
-                    return;
+                return;
             }
 
             try
@@ -203,7 +187,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
                 
                 // ProjectSettingsディレクトリが存在しない場合は作成
                 var directory = Path.GetDirectoryName(SettingsFilePath);
-                if (!Directory.Exists(directory))
+                if (directory != null && !Directory.Exists(directory))
                 {
                     Directory.CreateDirectory(directory);
                 }
