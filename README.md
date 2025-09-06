@@ -1,6 +1,6 @@
-# UnityToolbarExtension
-Customizable Unity Editor toolbar
+<img width="900" src="https://github.com/user-attachments/assets/c0dcfe03-222a-4fc1-9de7-feb25bc528c7" />
 
+## 概要
 - Unityエディタ上部に、任意のボタンやスライダー等を表示できるエディタ拡張
 - 自作機能を簡単に入れられるほか、便利なデフォルト機能もいくつか用意
 - ProjectSettingsから有効無効の切り替えや表示場所の変更が可能
