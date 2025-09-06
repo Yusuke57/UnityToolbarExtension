@@ -42,10 +42,21 @@ namespace YujiAp.UnityToolbarExtension.Editor
                 "Enable/disable toolbar elements and drag to reorder them within the same layout type.",
                 MessageType.Info);
 
-            if (GUILayout.Button("View Documentation", GUILayout.Width(150)))
+            EditorGUILayout.BeginHorizontal();
             {
-                Application.OpenURL("https://github.com/Yusuke57/UnityToolbarExtension");
+                if (GUILayout.Button("Reset to Default Layout", GUILayout.Width(150)))
+                {
+                    _settings.ResetAllLayoutTypesToDefault(_cachedAvailableTypes);
+                    _settings.SaveSettingsIfDirty();
+                    EditorApplication.delayCall += ToolbarExtension.ForceRefresh;
+                }
+
+                if (GUILayout.Button("View Documentation", GUILayout.Width(150)))
+                {
+                    Application.OpenURL("https://github.com/Yusuke57/UnityToolbarExtension");
+                }
             }
+            EditorGUILayout.EndHorizontal();
 
             EditorGUILayout.Space();
 
@@ -68,7 +79,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
                 if (settingsForLayout.Count == 0) continue;
 
                 EditorGUILayout.Space();
-                EditorGUILayout.LabelField(GetLayoutTypeName(layoutType), EditorStyles.boldLabel);
+                EditorGUILayout.LabelField(layoutType.ToString(), EditorStyles.boldLabel);
 
                 DrawReorderableElementList(layoutType, settingsForLayout, _cachedAvailableTypes);
             }
@@ -80,35 +91,17 @@ namespace YujiAp.UnityToolbarExtension.Editor
             }
         }
 
-        private static string GetLayoutTypeName(ToolbarElementLayoutType layoutType)
-        {
-            return layoutType switch
-            {
-                ToolbarElementLayoutType.LeftSideLeftAlign => "Left Side - Left Align",
-                ToolbarElementLayoutType.LeftSideRightAlign => "Left Side - Right Align",
-                ToolbarElementLayoutType.RightSideLeftAlign => "Right Side - Left Align",
-                ToolbarElementLayoutType.RightSideRightAlign => "Right Side - Right Align",
-                _ => layoutType.ToString()
-            };
-        }
-
         private void DrawReorderableElementList(ToolbarElementLayoutType layoutType, List<ToolbarElementSetting> settings, List<Type> availableTypes)
         {
-            if (!_reorderableLists.TryGetValue(layoutType, out var reorderableList))
+            if (!_reorderableLists.TryGetValue(layoutType, out var reorderableList) || reorderableList.count != settings.Count)
             {
-                reorderableList = CreateReorderableList(settings, availableTypes);
-                _reorderableLists[layoutType] = reorderableList;
-            }
-
-            // リストの内容が変更されている場合は再作成
-            if (reorderableList.count != settings.Count)
-            {
+                // 初回作成時またはリストの要素数が変わった場合のみ再作成
                 reorderableList = CreateReorderableList(settings, availableTypes);
                 _reorderableLists[layoutType] = reorderableList;
             }
             else
             {
-                // 既存のリストを更新
+                // 既存のリストを更新（同じオブジェクト参照を保持）
                 reorderableList.list = settings;
             }
 
@@ -139,15 +132,21 @@ namespace YujiAp.UnityToolbarExtension.Editor
                 }
 
                 // 要素名
-                var labelRect = new Rect(rect.x + 25, rect.y + 1, rect.width * 0.4f, EditorGUIUtility.singleLineHeight);
+                var labelRect = new Rect(rect.x + 25, rect.y + 1, rect.width * 0.5f, EditorGUIUtility.singleLineHeight);
                 EditorGUI.LabelField(labelRect, setting.DisplayName);
 
                 // LayoutType ドロップダウン
-                var layoutRect = new Rect(rect.x + rect.width * 0.45f, rect.y + 1, rect.width * 0.5f, EditorGUIUtility.singleLineHeight);
+                var layoutRect = new Rect(rect.x + rect.width * 0.6f, rect.y + 1, rect.width * 0.4f, EditorGUIUtility.singleLineHeight);
+                EditorGUI.BeginChangeCheck();
                 var newLayoutType = (ToolbarElementLayoutType) EditorGUI.EnumPopup(layoutRect, setting.LayoutType);
-                if (newLayoutType != setting.LayoutType && elementType != null)
+                if (EditorGUI.EndChangeCheck() && elementType != null)
                 {
-                    _settings.SetElementLayoutType(elementType, newLayoutType);
+                    // 直接settingオブジェクトを変更して即座に反映
+                    setting.SetLayoutType(newLayoutType);
+                    _settings.SetSettingsDirty(); // Dirty フラグを設定
+                    
+                    // LayoutType変更時はReorderableListを再構築する必要がある
+                    _reorderableLists.Clear();
                     EditorApplication.delayCall += ToolbarExtension.ForceRefresh;
                 }
             };
@@ -167,38 +166,6 @@ namespace YujiAp.UnityToolbarExtension.Editor
             reorderableList.elementHeight = EditorGUIUtility.singleLineHeight + 2;
 
             return reorderableList;
-        }
-
-
-        private void DrawAllElementsList(List<ToolbarElementSetting> settings, List<Type> availableTypes)
-        {
-            foreach (var setting in settings)
-            {
-                EditorGUILayout.BeginHorizontal();
-
-                var elementType = availableTypes.FirstOrDefault(t => t.FullName == setting.TypeName);
-
-                // 有効/無効トグル
-                var newEnabled = EditorGUILayout.Toggle(setting.IsEnabled, GUILayout.Width(20));
-                if (newEnabled != setting.IsEnabled && elementType != null)
-                {
-                    _settings.SetElementEnabled(elementType, newEnabled);
-                    EditorApplication.delayCall += ToolbarExtension.ForceRefresh;
-                }
-
-                // 要素名
-                EditorGUILayout.LabelField(setting.DisplayName, GUILayout.Width(200));
-
-                // LayoutType ドロップダウン
-                var newLayoutType = (ToolbarElementLayoutType) EditorGUILayout.EnumPopup(setting.LayoutType, GUILayout.Width(180));
-                if (newLayoutType != setting.LayoutType && elementType != null)
-                {
-                    _settings.SetElementLayoutType(elementType, newLayoutType);
-                    EditorApplication.delayCall += ToolbarExtension.ForceRefresh;
-                }
-
-                EditorGUILayout.EndHorizontal();
-            }
         }
 
         private static List<Type> GetAvailableToolbarElementTypes()

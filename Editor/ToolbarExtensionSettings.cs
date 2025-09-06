@@ -58,8 +58,12 @@ namespace YujiAp.UnityToolbarExtension.Editor
             var setting = _settingsData.ElementSettings.FirstOrDefault(s => s.TypeName == elementType.FullName);
             if (setting != null)
             {
-                setting.SetLayoutType(layoutType);
+                    setting.SetLayoutType(layoutType);
                 _isDirty = true;
+            }
+            else
+            {
+                Debug.LogError($"SetElementLayoutType: Setting not found for {elementType.FullName}");
             }
         }
 
@@ -78,17 +82,19 @@ namespace YujiAp.UnityToolbarExtension.Editor
         {
             var hasChanges = false;
 
-            // 新しい要素を追加
+            // 新しい要素を追加（保存済み設定がない場合のみDefaultLayoutTypeを使用）
             foreach (var type in newAvailableTypes)
             {
-                if (_settingsData.ElementSettings.All(s => s.TypeName != type.FullName))
+                var existingSetting = _settingsData.ElementSettings.FirstOrDefault(s => s.TypeName == type.FullName);
+                if (existingSetting == null)
                 {
                     var nextOrder = _settingsData.ElementSettings.Count > 0 ? _settingsData.ElementSettings.Max(s => s.Order) + 1 : 0;
-                    var originalLayoutType = GetLayoutType(type);
-                    var setting = new ToolbarElementSetting(type.FullName, GetDisplayName(type), true, nextOrder, originalLayoutType);
+                    var defaultLayoutType = GetLayoutType(type);
+                    var setting = new ToolbarElementSetting(type.FullName, GetDisplayName(type), true, nextOrder, defaultLayoutType);
                     _settingsData.ElementSettings.Add(setting);
                     hasChanges = true;
                 }
+                // 既存の設定は一切変更しない（EditorPrefsに保存済みの設定を保持）
             }
 
             // 存在しない要素を削除
@@ -101,6 +107,34 @@ namespace YujiAp.UnityToolbarExtension.Editor
                 _isDirty = true;
             }
         }
+        
+        /// <summary>
+        /// 既存の設定を全てDefaultLayoutTypeにリセット（開発・テスト用）
+        /// </summary>
+        public void ResetAllLayoutTypesToDefault(List<Type> availableTypes)
+        {
+            var hasChanges = false;
+            
+            foreach (var setting in _settingsData.ElementSettings)
+            {
+                var type = availableTypes.FirstOrDefault(t => t.FullName == setting.TypeName);
+                if (type != null)
+                {
+                    var defaultLayoutType = GetLayoutType(type);
+                    if (setting.LayoutType != defaultLayoutType)
+                    {
+                        setting.SetLayoutType(defaultLayoutType);
+                        hasChanges = true;
+                    }
+                }
+            }
+            
+            if (hasChanges)
+            {
+                _isDirty = true;
+            }
+        }
+        
 
         public void ReorderElements(List<ToolbarElementSetting> reorderedSettings)
         {
@@ -127,10 +161,13 @@ namespace YujiAp.UnityToolbarExtension.Editor
 
         public List<ToolbarElementSetting> GetSettingsForLayoutType(ToolbarElementLayoutType layoutType)
         {
-            return _settingsData.ElementSettings
-                .Where(s => s.LayoutType == layoutType)
-                .OrderBy(s => s.Order)
-                .ToList();
+            // 元のオブジェクトへの参照を保持するため、新しいListは作らずフィルタリングのみ
+            var filteredSettings = new List<ToolbarElementSetting>();
+            foreach (var setting in _settingsData.ElementSettings.Where(s => s.LayoutType == layoutType).OrderBy(s => s.Order))
+            {
+                filteredSettings.Add(setting); // 同じオブジェクト参照を追加
+            }
+            return filteredSettings;
         }
 
         private void LoadSettings()
@@ -155,7 +192,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
         {
             if (!_isDirty)
             {
-                return;
+                    return;
             }
 
             try
@@ -169,6 +206,11 @@ namespace YujiAp.UnityToolbarExtension.Editor
             }
 
             _isDirty = false;
+        }
+        
+        public void SetSettingsDirty()
+        {
+            _isDirty = true;
         }
     }
 
