@@ -8,7 +8,7 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
     public class ToolbarExtensionTimeScaleSlider : IToolbarElementRegister
     {
         private string TimeScaleValueText => $"×{Time.timeScale:F1}";
-        public ToolbarElementLayoutType LayoutType => ToolbarElementLayoutType.RightSideLeftAlign;
+        public ToolbarElementLayoutType DefaultLayoutType => ToolbarElementLayoutType.RightSideLeftAlign;
 
         private const float MaxTimeScale = 10f;
         private const float DefaultTimeScaleRange = 0.1f;

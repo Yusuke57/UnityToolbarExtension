@@ -8,7 +8,7 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
 {
     public class ToolbarExtensionRestartSceneButton : IToolbarElementRegister
     {
-        public ToolbarElementLayoutType LayoutType => ToolbarElementLayoutType.LeftSideRightAlign;
+        public ToolbarElementLayoutType DefaultLayoutType => ToolbarElementLayoutType.LeftSideRightAlign;
 
         public VisualElement CreateElement()
         {

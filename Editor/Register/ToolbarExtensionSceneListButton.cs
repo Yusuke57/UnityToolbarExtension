@@ -10,7 +10,7 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
 {
     public class ToolbarExtensionSceneListButton : IToolbarElementRegister
     {
-        public ToolbarElementLayoutType LayoutType => ToolbarElementLayoutType.RightSideRightAlign;
+        public ToolbarElementLayoutType DefaultLayoutType => ToolbarElementLayoutType.RightSideRightAlign;
 
         public VisualElement CreateElement()
         {

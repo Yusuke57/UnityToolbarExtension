@@ -12,7 +12,7 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
 
         private const string ClearHistoryText = "Clear History";
 
-        public ToolbarElementLayoutType LayoutType => ToolbarElementLayoutType.RightSideRightAlign;
+        public ToolbarElementLayoutType DefaultLayoutType => ToolbarElementLayoutType.RightSideRightAlign;
 
         public VisualElement CreateElement()
         {

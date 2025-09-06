@@ -4,7 +4,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
 {
     public interface IToolbarElementRegister
     {
-        ToolbarElementLayoutType LayoutType { get; }
+        ToolbarElementLayoutType DefaultLayoutType { get; }
         VisualElement CreateElement();
     }
 

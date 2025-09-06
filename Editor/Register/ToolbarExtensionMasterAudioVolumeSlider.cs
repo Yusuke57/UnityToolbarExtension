@@ -8,7 +8,7 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
     public class ToolbarExtensionMasterAudioVolumeSlider : IToolbarElementRegister
     {
         private string MasterAudioVolumeValueText => $"{AudioListener.volume * 100:0}";
-        public ToolbarElementLayoutType LayoutType => ToolbarElementLayoutType.LeftSideLeftAlign;
+        public ToolbarElementLayoutType DefaultLayoutType => ToolbarElementLayoutType.LeftSideLeftAlign;
 
         public VisualElement CreateElement()
         {

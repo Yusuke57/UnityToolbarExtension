@@ -65,7 +65,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
             DrawElements(leftContainer.Q(ToolbarExtensionLeftAlignName), leftContainer.Q(ToolbarExtensionRightAlignName),
                 rightContainer.Q(ToolbarExtensionLeftAlignName), rightContainer.Q(ToolbarExtensionRightAlignName));
         }
-        
+
         private static VisualElement GetToolbar()
         {
             var toolbarType = Type.GetType("UnityEditor.Toolbar,UnityEditor")!;
@@ -91,7 +91,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
             root.style.alignItems = Align.Center;
             root.style.justifyContent = Justify.FlexStart;
             root.style.flexGrow = 1;
-            
+
             var leftAlign = new VisualElement();
             leftAlign.name = ToolbarExtensionLeftAlignName;
             leftAlign.style.flexDirection = FlexDirection.Row;
@@ -99,11 +99,11 @@ namespace YujiAp.UnityToolbarExtension.Editor
             leftAlign.style.justifyContent = Justify.FlexStart;
             leftAlign.style.flexGrow = 1;
             root.Add(leftAlign);
-            
+
             var flexSpacer = new VisualElement();
             flexSpacer.style.flexGrow = 1;
             root.Add(flexSpacer);
-            
+
             var rightAlign = new VisualElement();
             rightAlign.name = ToolbarExtensionRightAlignName;
             rightAlign.style.flexDirection = FlexDirection.Row;
@@ -111,7 +111,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
             rightAlign.style.justifyContent = Justify.FlexEnd;
             rightAlign.style.flexGrow = 1;
             root.Add(rightAlign);
-            
+
             return root;
         }
 
@@ -126,16 +126,12 @@ namespace YujiAp.UnityToolbarExtension.Editor
 
             var settings = GetSettings();
             var elementRegisters = GetTypesImplementingInterface<IToolbarElementRegister>();
-            
+
             // 設定がある場合は設定に従って利用可能な型を更新
-            if (settings != null)
-            {
-                settings.SetAvailableTypes(elementRegisters.ToList());
-                settings.UpdateElementSettings(elementRegisters.ToList());
-            }
+            settings?.UpdateElementSettings(elementRegisters.ToList());
 
             // LayoutType別に要素を配置
-            var layoutTypes = (ToolbarElementLayoutType[])Enum.GetValues(typeof(ToolbarElementLayoutType));
+            var layoutTypes = (ToolbarElementLayoutType[]) Enum.GetValues(typeof(ToolbarElementLayoutType));
 
             foreach (var layoutType in layoutTypes)
             {
@@ -149,18 +145,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
                 };
 
                 // 設定からこのLayoutTypeの要素を順序付きで取得
-                var orderedSettings = settings?.GetSettingsForLayoutType(layoutType) ?? 
-                    elementRegisters
-                        .Where(type =>
-                        {
-                            if (Activator.CreateInstance(type) is IToolbarElementRegister register)
-                            {
-                                return register.LayoutType == layoutType;
-                            }
-                            return false;
-                        })
-                        .Select(type => new ToolbarElementSetting(type.FullName, type.Name, true, 0))
-                        .ToList();
+                var orderedSettings = settings?.GetSettingsForLayoutType(layoutType) ?? new List<ToolbarElementSetting>();
 
                 foreach (var elementSetting in orderedSettings)
                 {
@@ -181,7 +166,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
                 }
             }
         }
-        
+
         /// <summary>
         /// 特定のインターフェースを実装したすべての型を取得
         /// </summary>
@@ -194,7 +179,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
                 .Where(t => t != null && interfaceType.IsAssignableFrom(t) && t.IsClass && !t.IsAbstract)
                 .ToList();
         }
-        
+
         private static IEnumerable<Type> GetAssemblyTypes(Assembly assembly)
         {
             try
@@ -228,7 +213,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
 
             var leftContainer = toolbar.Q(ToolbarExtensionLeftContainerName);
             var rightContainer = toolbar.Q(ToolbarExtensionRightContainerName);
-            
+
             if (leftContainer != null && rightContainer != null)
             {
                 DrawElements(leftContainer.Q(ToolbarExtensionLeftAlignName), leftContainer.Q(ToolbarExtensionRightAlignName),
