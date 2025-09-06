@@ -65,6 +65,7 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
                 // ビルド設定のシーンを上部に追加
                 if (buildScenePaths.Length > 0)
                 {
+                    menu.AddSeparator("▼Scenes in build");
                     var buildDisplayNames = GenerateUniqueDisplayNames(buildScenePaths);
 
                     for (var i = 0; i < buildScenePaths.Length; i++)
@@ -82,15 +83,10 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
                     }
                 }
 
-                // 水平線を追加（ビルド設定外のシーンがある場合のみ）
-                if (buildScenePaths.Length > 0 && otherScenePaths.Length > 0)
-                {
-                    menu.AddSeparator("");
-                }
-
                 // ビルド設定外のシーンを下部に追加
                 if (otherScenePaths.Length > 0)
                 {
+                    menu.AddSeparator("▼Other Scenes");
                     var otherDisplayNames = GenerateUniqueDisplayNames(otherScenePaths);
 
                     for (var i = 0; i < otherScenePaths.Length; i++)
