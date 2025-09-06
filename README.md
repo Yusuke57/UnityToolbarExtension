@@ -26,7 +26,8 @@ ProjectSettings の Toolbar Extension で、各機能の有効無効や表示位
 - デフォルトの表示位置を返すプロパティ
 - 表示するVisualElementを返すメソッド
 
-を記述することで表示される
+を記述することで表示される  
+※Editorフォルダ以下に置くなど、エディタ専用スクリプトにしておくこと
 
 ```cs
 using UnityEditor.Toolbars;
