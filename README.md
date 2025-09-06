@@ -59,3 +59,6 @@ namespace Sample.Editor
 ## 確認環境
 - MacOS
 - Unity6.1
+
+## Author
+[https://x.com/yuji_ap](https://x.com/yuji_ap)
