@@ -12,7 +12,6 @@ namespace YujiAp.UnityToolbarExtension.Editor
     {
         private const string SettingsPath = "Project/Unity Toolbar Extension";
         private ToolbarExtensionSettings _settings;
-        private SerializedObject _serializedSettings;
         private readonly Dictionary<ToolbarElementLayoutType, ReorderableList> _reorderableLists = new Dictionary<ToolbarElementLayoutType, ReorderableList>();
         private bool _needsRefresh;
 
@@ -24,13 +23,12 @@ namespace YujiAp.UnityToolbarExtension.Editor
 
         public override void OnActivate(string searchContext, VisualElement rootElement)
         {
-            _settings = GetOrCreateSettings();
-            _serializedSettings = new SerializedObject(_settings);
+            _settings = ToolbarExtensionSettings.Instance;
         }
 
         public override void OnGUI(string searchContext)
         {
-            if (_settings == null || _serializedSettings == null)
+            if (_settings == null)
             {
                 EditorGUILayout.HelpBox("Settings could not be loaded.", MessageType.Error);
                 return;
@@ -48,8 +46,6 @@ namespace YujiAp.UnityToolbarExtension.Editor
             var availableTypes = GetAvailableToolbarElementTypes();
             _settings.SetAvailableTypes(availableTypes);
             _settings.UpdateElementSettings(availableTypes);
-
-            _serializedSettings.Update();
 
             EditorGUI.BeginChangeCheck();
 
@@ -69,8 +65,6 @@ namespace YujiAp.UnityToolbarExtension.Editor
 
             if (EditorGUI.EndChangeCheck() || _needsRefresh)
             {
-                EditorUtility.SetDirty(_settings);
-                _serializedSettings.ApplyModifiedProperties();
                 // 設定変更時にツールバーを即座に更新
                 ToolbarExtension.ForceRefresh();
                 _needsRefresh = false;
@@ -152,25 +146,6 @@ namespace YujiAp.UnityToolbarExtension.Editor
             return reorderableList;
         }
 
-        private static ToolbarExtensionSettings GetOrCreateSettings()
-        {
-            var settings = AssetDatabase.LoadAssetAtPath<ToolbarExtensionSettings>(ToolbarExtensionSettings.SettingsPath);
-            if (settings == null)
-            {
-                settings = ScriptableObject.CreateInstance<ToolbarExtensionSettings>();
-                
-                // Editorフォルダを作成（存在しない場合）
-                var editorFolderPath = "Assets/Editor";
-                if (!AssetDatabase.IsValidFolder(editorFolderPath))
-                {
-                    AssetDatabase.CreateFolder("Assets", "Editor");
-                }
-                
-                AssetDatabase.CreateAsset(settings, ToolbarExtensionSettings.SettingsPath);
-                AssetDatabase.SaveAssets();
-            }
-            return settings;
-        }
 
         private static List<Type> GetAvailableToolbarElementTypes()
         {

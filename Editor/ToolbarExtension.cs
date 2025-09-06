@@ -223,7 +223,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
         /// </summary>
         private static ToolbarExtensionSettings GetSettings()
         {
-            return AssetDatabase.LoadAssetAtPath<ToolbarExtensionSettings>(ToolbarExtensionSettings.SettingsPath);
+            return ToolbarExtensionSettings.Instance;
         }
 
         /// <summary>

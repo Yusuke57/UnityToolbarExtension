@@ -1,16 +1,31 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 namespace YujiAp.UnityToolbarExtension.Editor
 {
-    [Serializable]
-    public class ToolbarExtensionSettings : ScriptableObject
+    public class ToolbarExtensionSettings
     {
-        public const string SettingsPath = "Assets/Editor/ToolbarExtensionSettings.asset";
+        private const string PrefsKeyPrefix = "ToolbarExtension_";
+        private const string ElementCountKey = PrefsKeyPrefix + "ElementCount";
         
-        [SerializeField] private List<ToolbarElementSetting> elementSettings = new();
+        private List<ToolbarElementSetting> elementSettings = new List<ToolbarElementSetting>();
+        private static ToolbarExtensionSettings _instance;
+
+        public static ToolbarExtensionSettings Instance
+        {
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new ToolbarExtensionSettings();
+                    _instance.LoadSettings();
+                }
+                return _instance;
+            }
+        }
 
         public IReadOnlyList<ToolbarElementSetting> ElementSettings => elementSettings;
 
@@ -32,6 +47,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
             {
                 setting.SetEnabled(enabled);
             }
+            SaveSettings();
         }
 
         private string GetDisplayName(Type type)
@@ -47,10 +63,10 @@ namespace YujiAp.UnityToolbarExtension.Editor
             return displayName;
         }
 
-        public void UpdateElementSettings(List<Type> availableTypes)
+        public void UpdateElementSettings(List<Type> newAvailableTypes)
         {
             // 新しい要素を追加
-            foreach (var type in availableTypes)
+            foreach (var type in newAvailableTypes)
             {
                 if (elementSettings.All(s => s.TypeName != type.FullName))
                 {
@@ -61,8 +77,10 @@ namespace YujiAp.UnityToolbarExtension.Editor
             }
 
             // 存在しない要素を削除
-            var availableTypeNames = availableTypes.Select(t => t.FullName).ToHashSet();
+            var availableTypeNames = newAvailableTypes.Select(t => t.FullName).ToHashSet();
             elementSettings.RemoveAll(s => !availableTypeNames.Contains(s.TypeName));
+            
+            SaveSettings();
         }
 
         public void ReorderElements(ToolbarElementLayoutType layoutType, List<ToolbarElementSetting> reorderedSettings)
@@ -77,6 +95,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
                     originalSetting.SetOrder(i);
                 }
             }
+            SaveSettings();
         }
 
         private static List<Type> availableTypes;
@@ -105,6 +124,49 @@ namespace YujiAp.UnityToolbarExtension.Editor
                 })
                 .OrderBy(s => s.Order)
                 .ToList();
+        }
+
+        private void LoadSettings()
+        {
+            var count = EditorPrefs.GetInt(ElementCountKey, 0);
+            elementSettings.Clear();
+            
+            for (int i = 0; i < count; i++)
+            {
+                var typeNameKey = PrefsKeyPrefix + "TypeName_" + i;
+                var displayNameKey = PrefsKeyPrefix + "DisplayName_" + i;
+                var isEnabledKey = PrefsKeyPrefix + "IsEnabled_" + i;
+                var orderKey = PrefsKeyPrefix + "Order_" + i;
+                
+                if (EditorPrefs.HasKey(typeNameKey))
+                {
+                    var typeName = EditorPrefs.GetString(typeNameKey);
+                    var displayName = EditorPrefs.GetString(displayNameKey);
+                    var isEnabled = EditorPrefs.GetBool(isEnabledKey, true);
+                    var order = EditorPrefs.GetInt(orderKey, 0);
+                    
+                    elementSettings.Add(new ToolbarElementSetting(typeName, displayName, isEnabled, order));
+                }
+            }
+        }
+
+        private void SaveSettings()
+        {
+            EditorPrefs.SetInt(ElementCountKey, elementSettings.Count);
+            
+            for (int i = 0; i < elementSettings.Count; i++)
+            {
+                var setting = elementSettings[i];
+                var typeNameKey = PrefsKeyPrefix + "TypeName_" + i;
+                var displayNameKey = PrefsKeyPrefix + "DisplayName_" + i;
+                var isEnabledKey = PrefsKeyPrefix + "IsEnabled_" + i;
+                var orderKey = PrefsKeyPrefix + "Order_" + i;
+                
+                EditorPrefs.SetString(typeNameKey, setting.TypeName);
+                EditorPrefs.SetString(displayNameKey, setting.DisplayName);
+                EditorPrefs.SetBool(isEnabledKey, setting.IsEnabled);
+                EditorPrefs.SetInt(orderKey, setting.Order);
+            }
         }
     }
 
