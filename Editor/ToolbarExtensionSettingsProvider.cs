@@ -42,6 +42,11 @@ namespace YujiAp.UnityToolbarExtension.Editor
                 "Enable/disable toolbar elements and drag to reorder them within the same layout type.",
                 MessageType.Info);
             
+            if (GUILayout.Button("View Documentation", GUILayout.Width(150)))
+            {
+                Application.OpenURL("https://github.com/Yusuke57/UnityToolbarExtension");
+            }
+            
             EditorGUILayout.Space();
 
             // 初期化時のみ要素タイプを取得して設定を更新
