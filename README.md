@@ -1,18 +1,18 @@
 <img width="900" src="https://github.com/user-attachments/assets/c0dcfe03-222a-4fc1-9de7-feb25bc528c7" />
 
 ## 概要
-- Unityエディタ上部に、任意のボタンやスライダー等を表示できるエディタ拡張
+- **Unityエディタ上部に、任意のボタンやスライダー等を表示できる**エディタ拡張
 - 自作機能を簡単に入れられるほか、便利なデフォルト機能もいくつか用意
 - ProjectSettingsから有効無効の切り替えや表示場所の変更が可能
 
 ## デフォルト機能
 <img width="900" src="https://github.com/user-attachments/assets/7461eeb4-208e-45da-b08d-6811de1140a0" />
 
-- プレイ中の音量変更: AudioListener.valueを変更する。アイコンクリックで最大音量に戻す
-- Sceneのリロード: プレイ中、現在のシーンを再読み込みする
-- TimeScaleの変更: Time.timeScaleを変更する。アイコンクリックで1に戻す
-- Prefab表示履歴: 開いたPrefabの履歴リストを表示し、選択するとそのPrefabを開く
-- Scene一覧: プロジェクト内のSceneリストを表示し、選択するとそのSceneを開く  
+- **プレイ中の音量変更:** AudioListener.valueを変更する。アイコンクリックで最大音量に戻す
+- **Sceneのリロード:** プレイ中、現在のシーンを再読み込みする
+- **TimeScaleの変更:** Time.timeScaleを変更する。アイコンクリックで1に戻す
+- **Prefab表示履歴:** 開いたPrefabの履歴リストを表示し、選択するとそのPrefabを開く
+- **Scene一覧:** プロジェクト内のSceneリストを表示し、選択するとそのSceneを開く  
 上部にビルド設定に含まれるScene、その下にそれ以外のSceneが表示される
 
 ## 設定
