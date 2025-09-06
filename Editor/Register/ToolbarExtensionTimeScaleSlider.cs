@@ -11,7 +11,7 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
         public ToolbarElementLayoutType DefaultLayoutType => ToolbarElementLayoutType.RightSideLeftAlign;
 
         private const float MaxTimeScale = 10f;
-        private const float DefaultTimeScaleRange = 0.1f;
+        private const float DefaultTimeScaleRange = 0.13f;
 
         public VisualElement CreateElement()
         {
