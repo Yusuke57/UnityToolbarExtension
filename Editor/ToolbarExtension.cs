@@ -118,9 +118,22 @@ namespace YujiAp.UnityToolbarExtension.Editor
         private static void DrawElements(VisualElement leftSideLeftAlignRoot, VisualElement leftSideRightAlignRoot,
             VisualElement rightSideLeftAlignRoot, VisualElement rightSideRightAlignRoot)
         {
+            // 既存の要素をクリア
+            leftSideLeftAlignRoot.Clear();
+            leftSideRightAlignRoot.Clear();
+            rightSideLeftAlignRoot.Clear();
+            rightSideRightAlignRoot.Clear();
+
+            var settings = GetSettings();
             var elementRegisters = GetTypesImplementingInterface<IToolbarElementRegister>();
             foreach (var registerType in elementRegisters)
             {
+                // 設定で無効化されている場合はスキップ
+                if (settings != null && !settings.IsElementEnabled(registerType))
+                {
+                    continue;
+                }
+
                 if (Activator.CreateInstance(registerType) is not IToolbarElementRegister register)
                 {
                     continue;
@@ -167,114 +180,30 @@ namespace YujiAp.UnityToolbarExtension.Editor
                 .Where(t => t != null && interfaceType.IsAssignableFrom(t) && t.IsClass && !t.IsAbstract);
         }
 
-/*
-        private static Button CreateReloadSceneButton()
+        /// <summary>
+        /// ToolbarExtensionSettingsを取得
+        /// </summary>
+        private static ToolbarExtensionSettings GetSettings()
         {
-            var button = new EditorToolbarButton(ReloadScene)
-            {
-                name = "ReloadScene",
-                icon = (Texture2D) EditorGUIUtility.IconContent("d_preAudioAutoPlayOff").image
-            };
-
-            button.SetEnabled(EditorApplication.isPlaying);
-
-            EditorApplication.playModeStateChanged += state =>
-            {
-                if (state == PlayModeStateChange.EnteredPlayMode) button.SetEnabled(true);
-                if (state == PlayModeStateChange.EnteredEditMode) button.SetEnabled(false);
-            };
-
-            return button;
+            return AssetDatabase.LoadAssetAtPath<ToolbarExtensionSettings>(ToolbarExtensionSettings.SettingsPath);
         }
 
-        private static void ReloadScene()
+        /// <summary>
+        /// ツールバーを強制的に再描画
+        /// </summary>
+        public static void ForceRefresh()
         {
-            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
-        }
-        
-        private static VisualElement CreatePrefabListButton()
-        {
-            var button = new EditorToolbarButton(OpenPrefabListMenu)
+            var toolbar = GetToolbar();
+            if (toolbar == null) return;
+
+            var leftContainer = toolbar.Q(ToolbarExtensionLeftContainerName);
+            var rightContainer = toolbar.Q(ToolbarExtensionRightContainerName);
+            
+            if (leftContainer != null && rightContainer != null)
             {
-                name = "PrefabListMenu",
-                icon = (Texture2D) EditorGUIUtility.IconContent("d_Prefab On Icon").image
-            };
-            return button;
-        }
-        
-        // Prefabリストメニューを表示
-        private static void OpenPrefabListMenu()
-        {
-            var menu = new GenericMenu();
-            var prefabHistory = _prefabHistoryHandler.PrefabHistory;
-            foreach (var prefabPath in prefabHistory)
-            {
-                var prefabAssetName = System.IO.Path.GetFileNameWithoutExtension(prefabPath);
-                menu.AddItem(new GUIContent(prefabAssetName), false, () =>
-                {
-                    PrefabStageUtility.OpenPrefab(prefabPath);
-                });
+                DrawElements(leftContainer.Q(ToolbarExtensionLeftAlignName), leftContainer.Q(ToolbarExtensionRightAlignName),
+                    rightContainer.Q(ToolbarExtensionLeftAlignName), rightContainer.Q(ToolbarExtensionRightAlignName));
             }
-
-            menu.ShowAsContext();
         }
-
-        private static VisualElement CreateSceneListButton()
-        {
-            var button = new EditorToolbarButton(OpenSceneListMenu)
-            {
-                name = "SceneListMenu",
-                icon = (Texture2D) EditorGUIUtility.IconContent("d_UnityLogo").image
-            };
-            return button;
-        }
-        
-        // Sceneリストメニューを表示
-        private static void OpenSceneListMenu()
-        {
-            var menu = new GenericMenu();
-            var scenes = EditorBuildSettings.scenes;
-            foreach (var scene in scenes)
-            {
-                var sceneAssetPath = scene.path;
-                var sceneAssetName = System.IO.Path.GetFileNameWithoutExtension(sceneAssetPath);
-                menu.AddItem(new GUIContent(sceneAssetName), false, () =>
-                {
-                    EditorSceneManager.SaveOpenScenes();
-                    EditorSceneManager.OpenScene(sceneAssetPath);
-                });
-            }
-
-            menu.ShowAsContext();
-        }
-
-        private static VisualElement CreateTimeScaleSlider()
-        {
-            var buttonContent = EditorGUIUtility.IconContent("d_UnityEditor.AnimationWindow");
-            var container = new IMGUIContainer(() =>
-            {
-                EditorGUILayout.BeginHorizontal();
-                {
-                    EditorGUILayout.BeginVertical();
-                    {
-                        GUILayout.FlexibleSpace();
-                        if (GUILayout.Button(buttonContent, EditorStyles.iconButton))
-                        {
-                            Time.timeScale = 1f;
-                        }
-                        GUILayout.FlexibleSpace();
-                    }
-                    EditorGUILayout.EndVertical();
-
-                    Time.timeScale = EditorGUILayout.Slider(Time.timeScale, 0f, 10f);
-                }
-                EditorGUILayout.EndHorizontal();
-            });
-            container.style.width = 140;
-            container.style.marginLeft = 40;
-
-            return container;
-        }
-        */
     }
 }
