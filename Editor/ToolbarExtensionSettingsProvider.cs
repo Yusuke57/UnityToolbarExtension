@@ -11,11 +11,12 @@ namespace YujiAp.UnityToolbarExtension.Editor
 {
     public class ToolbarExtensionSettingsProvider : SettingsProvider
     {
-        private const string SettingsPath = "Project/Unity Toolbar Extension";
         private ToolbarExtensionSettings _settings;
         private readonly Dictionary<ToolbarElementLayoutType, ReorderableList> _reorderableLists = new();
         private List<Type> _cachedAvailableTypes;
         private bool _isInitialized;
+
+        private const string SettingsPath = "Project/Toolbar Extension";
 
         private ToolbarExtensionSettingsProvider(string path, SettingsScope scope = SettingsScope.Project)
             : base(path, scope)
