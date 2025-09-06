@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -16,7 +17,8 @@ namespace YujiAp.UnityToolbarExtension.Editor
 
     public class ToolbarExtensionSettings
     {
-        private const string PrefsKey = "ToolbarExtensionSettings";
+        private const string SettingsFileName = "UnityToolbarExtensionSettings.json";
+        private static string SettingsFilePath => Path.Combine("ProjectSettings", SettingsFileName);
 
         private ToolbarElementSettingsData _settingsData = new();
         private static ToolbarExtensionSettings _instance;
@@ -174,16 +176,16 @@ namespace YujiAp.UnityToolbarExtension.Editor
         {
             _settingsData.ElementSettings.Clear();
 
-            if (EditorPrefs.HasKey(PrefsKey))
+            if (File.Exists(SettingsFilePath))
             {
-                var json = EditorPrefs.GetString(PrefsKey);
                 try
                 {
+                    var json = File.ReadAllText(SettingsFilePath);
                     _settingsData = JsonUtility.FromJson<ToolbarElementSettingsData>(json);
                 }
                 catch (Exception e)
                 {
-                    Debug.LogError($"Failed to load ToolbarExtension settings from JSON: {e.Message}");
+                    Debug.LogError($"Failed to load ToolbarExtension settings from {SettingsFilePath}: {e.Message}");
                 }
             }
         }
@@ -198,11 +200,19 @@ namespace YujiAp.UnityToolbarExtension.Editor
             try
             {
                 var json = JsonUtility.ToJson(_settingsData, true);
-                EditorPrefs.SetString(PrefsKey, json);
+                
+                // ProjectSettingsディレクトリが存在しない場合は作成
+                var directory = Path.GetDirectoryName(SettingsFilePath);
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+                
+                File.WriteAllText(SettingsFilePath, json);
             }
             catch (Exception e)
             {
-                Debug.LogError($"Failed to save ToolbarExtension settings to JSON: {e.Message}");
+                Debug.LogError($"Failed to save ToolbarExtension settings to {SettingsFilePath}: {e.Message}");
             }
 
             _isDirty = false;
