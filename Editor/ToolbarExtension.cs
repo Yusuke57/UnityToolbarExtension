@@ -126,26 +126,26 @@ namespace YujiAp.UnityToolbarExtension.Editor
 
             var settings = GetSettings();
             var elementRegisters = GetTypesImplementingInterface<IToolbarElementRegister>();
-            foreach (var registerType in elementRegisters)
+            
+            // 設定がある場合は設定に従って利用可能な型を更新
+            if (settings != null)
             {
-                // 設定で無効化されている場合はスキップ
-                if (settings != null && !settings.IsElementEnabled(registerType))
-                {
-                    continue;
-                }
+                settings.SetAvailableTypes(elementRegisters.ToList());
+                settings.UpdateElementSettings(elementRegisters.ToList());
+            }
 
-                if (Activator.CreateInstance(registerType) is not IToolbarElementRegister register)
-                {
-                    continue;
-                }
+            // LayoutType別に要素を配置
+            var layoutTypes = new[]
+            {
+                ToolbarElementLayoutType.LeftSideLeftAlign,
+                ToolbarElementLayoutType.LeftSideRightAlign,
+                ToolbarElementLayoutType.RightSideLeftAlign,
+                ToolbarElementLayoutType.RightSideRightAlign
+            };
 
-                var element = register.CreateElement();
-                if (element == null)
-                {
-                    continue;
-                }
-
-                var root = register.LayoutType switch
+            foreach (var layoutType in layoutTypes)
+            {
+                var root = layoutType switch
                 {
                     ToolbarElementLayoutType.LeftSideLeftAlign => leftSideLeftAlignRoot,
                     ToolbarElementLayoutType.LeftSideRightAlign => leftSideRightAlignRoot,
@@ -154,7 +154,45 @@ namespace YujiAp.UnityToolbarExtension.Editor
                     _ => throw new ArgumentOutOfRangeException()
                 };
 
-                root.Add(element);
+                // 設定からこのLayoutTypeの要素を順序付きで取得
+                List<ToolbarElementSetting> orderedSettings;
+                if (settings != null)
+                {
+                    orderedSettings = settings.GetSettingsForLayoutType(layoutType);
+                }
+                else
+                {
+                    // 設定がない場合はデフォルト順序
+                    orderedSettings = elementRegisters
+                        .Where(type =>
+                        {
+                            if (Activator.CreateInstance(type) is IToolbarElementRegister register)
+                            {
+                                return register.LayoutType == layoutType;
+                            }
+                            return false;
+                        })
+                        .Select(type => new ToolbarElementSetting(type.FullName, type.Name, true, 0))
+                        .ToList();
+                }
+
+                foreach (var elementSetting in orderedSettings)
+                {
+                    // 設定で無効化されている場合はスキップ
+                    if (!elementSetting.IsEnabled) continue;
+
+                    var registerType = elementRegisters.FirstOrDefault(t => t.FullName == elementSetting.TypeName);
+                    if (registerType == null) continue;
+
+                    if (Activator.CreateInstance(registerType) is IToolbarElementRegister register)
+                    {
+                        var element = register.CreateElement();
+                        if (element != null)
+                        {
+                            root.Add(element);
+                        }
+                    }
+                }
             }
         }
         
