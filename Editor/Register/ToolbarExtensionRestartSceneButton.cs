@@ -15,6 +15,7 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
             var button = new EditorToolbarButton(ReloadScene);
             button.name = nameof(ReloadScene);
             button.icon = (Texture2D) EditorGUIUtility.IconContent("d_preAudioAutoPlayOff").image;
+            button.tooltip = "Restart scene";
             button.SetEnabled(EditorApplication.isPlaying);
 
             EditorApplication.playModeStateChanged += state =>

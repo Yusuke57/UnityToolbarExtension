@@ -16,6 +16,7 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
         {
             var button = new EditorToolbarButton(OpenSceneListMenu);
             button.name = "SceneListButton";
+            button.tooltip = "Open scene";
             button.style.width = 40;
 
             var image = new Image();

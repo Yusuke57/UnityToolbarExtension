@@ -21,6 +21,7 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
 
             var button = new EditorToolbarButton(OpenPrefabHistoryMenu);
             button.name = "PrefabHistoryButton";
+            button.tooltip = "Open prefab from history";
             button.style.width = 40;
 
             var image = new Image();

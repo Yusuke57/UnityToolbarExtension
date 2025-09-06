@@ -41,6 +41,7 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
             var resetButton = new EditorToolbarButton(
                 (Texture2D) EditorGUIUtility.IconContent("d_Profiler.Audio").image,
                 () => slider.value = 1);
+            resetButton.tooltip = "Reset audio volume";
             resetButton.style.width = 18;
             resetButton.style.height = 18;
             resetButton.style.paddingTop = 0;
