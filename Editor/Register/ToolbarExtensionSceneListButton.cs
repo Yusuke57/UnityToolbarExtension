@@ -4,6 +4,7 @@ using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEditor.Toolbars;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UIElements;
 
 namespace YujiAp.UnityToolbarExtension.Editor.Register
@@ -61,46 +62,47 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
                 if (buildScenePaths.Length > 0)
                 {
                     menu.AddSeparator("▼Scenes in build");
-                    var buildDisplayNames = GenerateUniqueDisplayNames(buildScenePaths);
-
-                    for (var i = 0; i < buildScenePaths.Length; i++)
-                    {
-                        var scenePath = buildScenePaths[i];
-                        var displayName = buildDisplayNames[i];
-
-                        menu.AddItem(new GUIContent(displayName), false, () =>
-                        {
-                            if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
-                            {
-                                EditorSceneManager.OpenScene(scenePath);
-                            }
-                        });
-                    }
+                    AddScenesToMenu(menu, buildScenePaths);
                 }
 
                 // ビルド設定外のシーンを下部に追加
                 if (otherScenePaths.Length > 0)
                 {
                     menu.AddSeparator("▼Other Scenes");
-                    var otherDisplayNames = GenerateUniqueDisplayNames(otherScenePaths);
-
-                    for (var i = 0; i < otherScenePaths.Length; i++)
-                    {
-                        var scenePath = otherScenePaths[i];
-                        var displayName = otherDisplayNames[i];
-
-                        menu.AddItem(new GUIContent(displayName), false, () =>
-                        {
-                            if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
-                            {
-                                EditorSceneManager.OpenScene(scenePath);
-                            }
-                        });
-                    }
+                    AddScenesToMenu(menu, otherScenePaths);
                 }
             }
 
             menu.ShowAsContext();
+        }
+
+        private static void AddScenesToMenu(GenericMenu menu, string[] scenePaths)
+        {
+            var displayNames = GenerateUniqueDisplayNames(scenePaths);
+
+            for (var i = 0; i < scenePaths.Length; i++)
+            {
+                var scenePath = scenePaths[i];
+                var displayName = displayNames[i];
+
+                menu.AddItem(new GUIContent(displayName), false, () => LoadScene(scenePath));
+            }
+        }
+
+        private static void LoadScene(string scenePath)
+        {
+            if (Application.isPlaying)
+            {
+                var sceneName = Path.GetFileNameWithoutExtension(scenePath);
+                SceneManager.LoadScene(sceneName);
+            }
+            else
+            {
+                if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+                {
+                    EditorSceneManager.OpenScene(scenePath);
+                }
+            }
         }
 
         private static string[] GenerateUniqueDisplayNames(string[] scenePaths)
