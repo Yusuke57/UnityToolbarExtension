@@ -68,15 +68,31 @@ namespace YujiAp.UnityToolbarExtension.Editor
 
         private static VisualElement GetToolbar()
         {
-            var toolbarType = Type.GetType("UnityEditor.Toolbar,UnityEditor")!;
+            var toolbarType = Type.GetType("UnityEditor.Toolbar,UnityEditor");
+            if (toolbarType == null)
+            {
+                return null;
+            }
 
             var getField = toolbarType.GetField("get", BindingFlags.Static | BindingFlags.Public);
             var getValue = getField?.GetValue(null);
+            if (getValue == null)
+            {
+                return null;
+            }
 
             var windowBackendProperty = toolbarType.GetProperty("windowBackend", BindingFlags.Instance | BindingFlags.NonPublic);
             var windowBackendValue = windowBackendProperty?.GetValue(getValue);
+            if (windowBackendValue == null)
+            {
+                return null;
+            }
 
-            var iWindowBackendType = Type.GetType("UnityEditor.IWindowBackend,UnityEditor")!;
+            var iWindowBackendType = Type.GetType("UnityEditor.IWindowBackend,UnityEditor");
+            if (iWindowBackendType == null)
+            {
+                return null;
+            }
 
             var visualTreeProperty = iWindowBackendType.GetProperty("visualTree", BindingFlags.Instance | BindingFlags.Public);
             var visualTreeValue = visualTreeProperty?.GetValue(windowBackendValue);
