@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace YujiAp.UnityToolbarExtension.Editor
@@ -19,6 +20,11 @@ namespace YujiAp.UnityToolbarExtension.Editor
 
         static ToolbarExtension()
         {
+            if (Application.isBatchMode)
+            {
+                return;
+            }
+
             EditorApplication.update -= OnUpdate;
             EditorApplication.update += OnUpdate;
         }
