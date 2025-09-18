@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEditor.Toolbars;
@@ -43,12 +44,23 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
         private static void OpenPrefabHistoryMenu()
         {
             var menu = new GenericMenu();
-            var prefabHistory = _historyHandler.History;
-            foreach (var prefabPath in prefabHistory)
+            var pathsToRemove = new List<string>();
+
+            foreach (var prefabPath in _historyHandler.History)
             {
+                // 削除されているPrefabがあればリストに保存しておき、後で履歴から削除する
+                var asset = AssetDatabase.LoadAssetAtPath<Object>(prefabPath);
+                if (asset == null)
+                {
+                    pathsToRemove.Add(prefabPath);
+                    continue;
+                }
+
                 var prefabAssetName = System.IO.Path.GetFileNameWithoutExtension(prefabPath);
                 menu.AddItem(new GUIContent(prefabAssetName), false, () => PrefabStageUtility.OpenPrefab(prefabPath));
             }
+
+            _historyHandler.RemoveHistories(pathsToRemove);
 
             menu.AddSeparator("");
             menu.AddItem(new GUIContent(ClearHistoryText), false, () => _historyHandler.ClearHistory());
