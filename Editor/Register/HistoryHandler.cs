@@ -48,9 +48,20 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
             Save();
         }
 
+        public void RemoveHistories(List<string> values)
+        {
+            foreach (var value in values)
+            {
+                _history.Remove(value);
+            }
+
+            Save();
+        }
+
         public void ClearHistory()
         {
             _history.Clear();
+            Save();
         }
     }
 }
