@@ -20,20 +20,13 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
             PrefabStage.prefabStageOpened -= AddHistory;
             PrefabStage.prefabStageOpened += AddHistory;
 
-            var button = new EditorToolbarButton(OpenPrefabHistoryMenu);
-            button.name = "PrefabHistoryButton";
-            button.tooltip = "Open prefab from history";
-            button.style.width = 40;
+            var dropdown = new EditorToolbarDropdown();
+            dropdown.name = "PrefabHistoryButton";
+            dropdown.tooltip = "Open prefab from history";
+            dropdown.icon = (Texture2D) EditorGUIUtility.IconContent("d_Prefab Icon").image;
+            dropdown.clicked += OpenPrefabHistoryMenu;
 
-            var image = new Image();
-            image.image = EditorGUIUtility.IconContent("d_Prefab Icon").image;
-            button.Add(image);
-
-            var arrow = new VisualElement();
-            arrow.AddToClassList("unity-icon-arrow");
-            button.Add(arrow);
-
-            return button;
+            return dropdown;
 
             void AddHistory(PrefabStage prefabStage)
             {

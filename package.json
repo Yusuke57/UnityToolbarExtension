@@ -1,9 +1,9 @@
 {
   "name": "com.yujiap.unity-toolbar-extension",
   "displayName": "Unity Toolbar Extension",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "A flexible Unity Editor toolbar extension framework that enables developers to add custom UI elements with drag-and-drop reordering and enable/disable controls via ProjectSettings interface",
-  "unity": "6.0",
+  "unity": "6000.3",
   "keywords": [
     "toolbar",
     "editor",
