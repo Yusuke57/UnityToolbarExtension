@@ -19,6 +19,11 @@ namespace YujiAp.UnityToolbarExtension.Editor
 
         static ToolbarExtension()
         {
+            if (Application.isBatchMode)
+            {
+                return;
+            }
+
             EditorApplication.update -= OnUpdate;
             EditorApplication.update += OnUpdate;
         }
