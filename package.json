@@ -3,7 +3,7 @@
   "displayName": "Unity Toolbar Extension",
   "version": "1.2.0",
   "description": "A flexible Unity Editor toolbar extension framework that enables developers to add custom UI elements with drag-and-drop reordering and enable/disable controls via ProjectSettings interface",
-  "unity": "6000.3",
+  "unity": "2021.3",
   "keywords": [
     "toolbar",
     "editor",
