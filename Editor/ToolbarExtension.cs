@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEditor;
+using UnityEditor.Toolbars;
+using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace YujiAp.UnityToolbarExtension.Editor
@@ -10,8 +12,6 @@ namespace YujiAp.UnityToolbarExtension.Editor
     [InitializeOnLoad]
     public static class ToolbarExtension
     {
-        private const string ToolbarZoneLeftAlignName = "ToolbarZoneLeftAlign";
-        private const string ToolbarZoneRightAlignName = "ToolbarZoneRightAlign";
         private const string ToolbarExtensionLeftContainerName = "ToolbarExtensionLeftContainer";
         private const string ToolbarExtensionRightContainerName = "ToolbarExtensionRightContainer";
         private const string ToolbarExtensionLeftAlignName = "LeftAlign";
@@ -25,14 +25,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
 
         private static void OnUpdate()
         {
-            var toolbar = GetToolbar();
-            if (toolbar == null)
-            {
-                return;
-            }
-
-            var toolbarZoneLeftAlign = toolbar.Q(ToolbarZoneLeftAlignName);
-            var toolbarZoneRightAlign = toolbar.Q(ToolbarZoneRightAlignName);
+            var (toolbarZoneLeftAlign, toolbarZoneRightAlign) = GetToolbarZones();
             if (toolbarZoneLeftAlign == null || toolbarZoneRightAlign == null)
             {
                 return;
@@ -66,38 +59,54 @@ namespace YujiAp.UnityToolbarExtension.Editor
                 rightContainer.Q(ToolbarExtensionLeftAlignName), rightContainer.Q(ToolbarExtensionRightAlignName));
         }
 
-        private static VisualElement GetToolbar()
+        /// <summary>
+        /// ツールバーの左右ゾーンを取得する。
+        /// Unity 6000.3+: MainToolbarWindow の overlay-toolbar__top 内の ContainerSection を使用。
+        /// Unity 6000.1: Toolbar (HostView) の m_Root 内の ToolbarZone を使用。
+        /// </summary>
+        private static (VisualElement left, VisualElement right) GetToolbarZones()
         {
-            var toolbarType = Type.GetType("UnityEditor.Toolbar,UnityEditor");
-            if (toolbarType == null)
+            var editorAssembly = typeof(UnityEditor.Editor).Assembly;
+
+#if UNITY_6000_3_OR_NEWER
+            // Unity 6000.3+: MainToolbarWindow (EditorWindow) の rootVisualElement から取得
+            var mainToolbarWindowType = editorAssembly.GetType("UnityEditor.MainToolbarWindow");
+            if (mainToolbarWindowType != null)
             {
-                return null;
+                var instances = Resources.FindObjectsOfTypeAll(mainToolbarWindowType);
+                if (instances.Length > 0 && instances[0] is EditorWindow toolbarWindow)
+                {
+                    var overlayContainer = toolbarWindow.rootVisualElement.Q("overlay-toolbar__top");
+                    if (overlayContainer != null)
+                    {
+                        // ContainerSection の順序: [0]=左, [1]=中央(PlayMode), [2]=右
+                        var sections = overlayContainer.Children().ToList();
+                        if (sections.Count >= 3)
+                        {
+                            return (sections[0], sections[2]);
+                        }
+                    }
+                }
             }
-
-            var getField = toolbarType.GetField("get", BindingFlags.Static | BindingFlags.Public);
-            var getValue = getField?.GetValue(null);
-            if (getValue == null)
+#else
+            // Unity 6000.1: Toolbar (HostView) の m_Root から取得
+            var toolbarType = editorAssembly.GetType("UnityEditor.Toolbar");
+            if (toolbarType != null)
             {
-                return null;
+                var instances = Resources.FindObjectsOfTypeAll(toolbarType);
+                if (instances.Length > 0)
+                {
+                    var rootField = toolbarType.GetField("m_Root", BindingFlags.NonPublic | BindingFlags.Instance);
+                    if (rootField?.GetValue(instances[0]) is VisualElement root)
+                    {
+                        var left = root.Q("ToolbarZoneLeftAlign");
+                        var right = root.Q("ToolbarZoneRightAlign");
+                        return (left, right);
+                    }
+                }
             }
-
-            var windowBackendProperty = toolbarType.GetProperty("windowBackend", BindingFlags.Instance | BindingFlags.NonPublic);
-            var windowBackendValue = windowBackendProperty?.GetValue(getValue);
-            if (windowBackendValue == null)
-            {
-                return null;
-            }
-
-            var iWindowBackendType = Type.GetType("UnityEditor.IWindowBackend,UnityEditor");
-            if (iWindowBackendType == null)
-            {
-                return null;
-            }
-
-            var visualTreeProperty = iWindowBackendType.GetProperty("visualTree", BindingFlags.Instance | BindingFlags.Public);
-            var visualTreeValue = visualTreeProperty?.GetValue(windowBackendValue);
-
-            return visualTreeValue as VisualElement;
+#endif
+            return (null, null);
         }
 
         private static VisualElement CreateContainerElement()
@@ -106,18 +115,27 @@ namespace YujiAp.UnityToolbarExtension.Editor
             root.style.flexDirection = FlexDirection.Row;
             root.style.alignItems = Align.Center;
             root.style.justifyContent = Justify.FlexStart;
+#if UNITY_6000_3_OR_NEWER
+            root.style.alignSelf = Align.Center;
+            root.style.flexShrink = 0;
+#else
             root.style.flexGrow = 1;
+#endif
 
             var leftAlign = new VisualElement();
             leftAlign.name = ToolbarExtensionLeftAlignName;
             leftAlign.style.flexDirection = FlexDirection.Row;
             leftAlign.style.alignItems = Align.Center;
             leftAlign.style.justifyContent = Justify.FlexStart;
+#if !UNITY_6000_3_OR_NEWER
             leftAlign.style.flexGrow = 1;
+#endif
             root.Add(leftAlign);
 
             var flexSpacer = new VisualElement();
+#if !UNITY_6000_3_OR_NEWER
             flexSpacer.style.flexGrow = 1;
+#endif
             root.Add(flexSpacer);
 
             var rightAlign = new VisualElement();
@@ -125,7 +143,9 @@ namespace YujiAp.UnityToolbarExtension.Editor
             rightAlign.style.flexDirection = FlexDirection.Row;
             rightAlign.style.alignItems = Align.Center;
             rightAlign.style.justifyContent = Justify.FlexEnd;
+#if !UNITY_6000_3_OR_NEWER
             rightAlign.style.flexGrow = 1;
+#endif
             root.Add(rightAlign);
 
             return root;
@@ -182,6 +202,7 @@ namespace YujiAp.UnityToolbarExtension.Editor
                         var element = toolbarElement.CreateElement();
                         if (element != null)
                         {
+                            ApplyToolbarOverlayStyle(element);
                             root.Add(element);
                         }
                     }
@@ -227,14 +248,11 @@ namespace YujiAp.UnityToolbarExtension.Editor
         /// </summary>
         public static void ForceRefresh()
         {
-            var toolbar = GetToolbar();
-            if (toolbar == null)
-            {
-                return;
-            }
+            var (leftZone, rightZone) = GetToolbarZones();
+            if (leftZone == null || rightZone == null) return;
 
-            var leftContainer = toolbar.Q(ToolbarExtensionLeftContainerName);
-            var rightContainer = toolbar.Q(ToolbarExtensionRightContainerName);
+            var leftContainer = leftZone.Q(ToolbarExtensionLeftContainerName);
+            var rightContainer = rightZone.Q(ToolbarExtensionRightContainerName);
 
             if (leftContainer != null && rightContainer != null)
             {
@@ -242,5 +260,27 @@ namespace YujiAp.UnityToolbarExtension.Editor
                     rightContainer.Q(ToolbarExtensionLeftAlignName), rightContainer.Q(ToolbarExtensionRightAlignName));
             }
         }
+
+#if UNITY_6000_3_OR_NEWER
+        /// <summary>
+        /// ツールバー要素にOverlayToolbar相当のスタイルを適用する
+        /// </summary>
+        private static void ApplyToolbarOverlayStyle(VisualElement element)
+        {
+            if (element is EditorToolbarButton or EditorToolbarDropdown)
+            {
+                element.style.flexDirection = FlexDirection.Row;
+                element.style.alignItems = Align.Center;
+            }
+
+            element.Query(className: "unity-editor-toolbar-element__icon").ForEach(icon =>
+            {
+                icon.style.width = 16;
+                icon.style.height = 16;
+            });
+        }
+#else
+        private static void ApplyToolbarOverlayStyle(VisualElement element) { }
+#endif
     }
 }

@@ -15,20 +15,13 @@ namespace YujiAp.UnityToolbarExtension.Editor.Register
 
         public VisualElement CreateElement()
         {
-            var button = new EditorToolbarButton(OpenSceneListMenu);
-            button.name = "SceneListButton";
-            button.tooltip = "Open scene";
-            button.style.width = 40;
+            var dropdown = new EditorToolbarDropdown();
+            dropdown.name = "SceneListButton";
+            dropdown.tooltip = "Open scene";
+            dropdown.icon = (Texture2D) EditorGUIUtility.IconContent("d_SceneAsset Icon").image;
+            dropdown.clicked += OpenSceneListMenu;
 
-            var image = new Image();
-            image.image = EditorGUIUtility.IconContent("d_SceneAsset Icon").image;
-            button.Add(image);
-
-            var arrow = new VisualElement();
-            arrow.AddToClassList("unity-icon-arrow");
-            button.Add(arrow);
-
-            return button;
+            return dropdown;
         }
 
         private static void OpenSceneListMenu()
